@@ -1,8 +1,10 @@
+#[macro_use]
+extern crate log;
 extern crate zyre_binding;
 
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
-use zyre_binding::{zyre_destroy, zyre_name, zyre_new, zyre_t, zyre_uuid};
+use zyre_binding::{zyre_destroy, zyre_name, zyre_new, zyre_set_interface, zyre_t, zyre_uuid};
 
 pub struct Node {
     zyre_node: *mut zyre_t,
@@ -33,6 +35,19 @@ impl Node {
             CStr::from_ptr(c_name)
         };
         return name.to_string_lossy();
+    }
+
+    pub fn set_interface(&self, interface: &str) {
+        let c_interface = match CString::new(interface) {
+            Ok(cstr) => cstr,
+            Err(_) => {
+                warn!("Invalid interface {}, using * instead", interface);
+                CString::new("*").unwrap()
+            }
+        };
+        unsafe {
+            zyre_set_interface(self.zyre_node, c_interface.as_ptr());
+        }
     }
 
     pub fn uuid(&self) -> Cow<str> {
