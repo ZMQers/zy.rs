@@ -4,8 +4,8 @@ extern crate zyre_binding;
 
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
-use zyre_binding::{zyre_destroy, zyre_name, zyre_new, zyre_set_interface, zyre_start, zyre_stop,
-                   zyre_t, zyre_uuid};
+use zyre_binding::{zyre_destroy, zyre_join, zyre_leave, zyre_name, zyre_new, zyre_set_interface,
+                   zyre_start, zyre_stop, zyre_t, zyre_uuid};
 
 pub struct Node {
     zyre_node: *mut zyre_t,
@@ -28,6 +28,20 @@ impl Node {
         let zyre_node = unsafe { zyre_new(c_name.as_ptr()) };
         let node = Node { zyre_node };
         return Ok(node);
+    }
+
+    pub fn join(&self, group: &str) {
+        let c_group = force_c_string(group);
+        unsafe {
+            zyre_join(self.zyre_node, c_group);
+        }
+    }
+
+    pub fn leave(&self, group: &str) {
+        let c_group = force_c_string(group);
+        unsafe {
+            zyre_leave(self.zyre_node, c_group);
+        }
     }
 
     pub fn name(&self) -> Cow<str> {
@@ -70,6 +84,10 @@ impl Node {
         };
         return uuid.to_string_lossy();
     }
+}
+
+fn force_c_string(str_in: &str) -> *const std::os::raw::c_char {
+    return CString::new(str_in).unwrap().as_ptr();
 }
 
 #[cfg(test)]
