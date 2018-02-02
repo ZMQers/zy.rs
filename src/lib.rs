@@ -1,7 +1,8 @@
 extern crate zyre_binding;
 
-use std::ffi::CString;
-use zyre_binding::{zyre_destroy, zyre_new, zyre_t};
+use std::borrow::Cow;
+use std::ffi::{CStr, CString};
+use zyre_binding::{zyre_destroy, zyre_name, zyre_new, zyre_t, zyre_uuid};
 
 pub struct Node {
     zyre_node: *mut zyre_t,
@@ -25,11 +26,34 @@ impl Node {
         let node = Node { zyre_node };
         return Ok(node);
     }
+
+    pub fn name(&self) -> Cow<str> {
+        let name = unsafe {
+            let c_name = zyre_name(self.zyre_node);
+            CStr::from_ptr(c_name)
+        };
+        return name.to_string_lossy();
+    }
+
+    pub fn uuid(&self) -> Cow<str> {
+        let uuid = unsafe {
+            let c_uuid = zyre_uuid(self.zyre_node);
+            CStr::from_ptr(c_uuid)
+        };
+        return uuid.to_string_lossy();
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_name() {
+        let name = "Some Node";
+        let node = Node::new(name).unwrap();
+        assert_eq!(node.name(), name);
+    }
 
     #[test]
     fn test_new() {
@@ -45,5 +69,12 @@ mod tests {
             Ok(_) => panic!("Didn't get expected error due to null in name"),
             Err(_) => (),
         }
+    }
+
+    #[test]
+    fn test_uuid() {
+        let node = Node::new("test node").unwrap();
+        let uuid = node.uuid();
+        assert_eq!(uuid.len(), 32);
     }
 }
