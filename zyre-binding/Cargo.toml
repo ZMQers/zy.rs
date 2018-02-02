@@ -1,0 +1,7 @@
+[package]
+name = "zyre-binding"
+version = "0.1.0"
+authors = ["James Wheatley <james@jammy.co>"]
+
+[build-dependencies]
+bindgen = "0.32.3"
