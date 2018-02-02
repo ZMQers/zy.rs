@@ -4,7 +4,8 @@ extern crate zyre_binding;
 
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
-use zyre_binding::{zyre_destroy, zyre_name, zyre_new, zyre_set_interface, zyre_t, zyre_uuid};
+use zyre_binding::{zyre_destroy, zyre_name, zyre_new, zyre_set_interface, zyre_start, zyre_stop,
+                   zyre_t, zyre_uuid};
 
 pub struct Node {
     zyre_node: *mut zyre_t,
@@ -47,6 +48,18 @@ impl Node {
         };
         unsafe {
             zyre_set_interface(self.zyre_node, c_interface.as_ptr());
+        }
+    }
+
+    pub fn start(&self) {
+        unsafe {
+            zyre_start(self.zyre_node);
+        }
+    }
+
+    pub fn stop(&self) {
+        unsafe {
+            zyre_stop(self.zyre_node);
         }
     }
 
